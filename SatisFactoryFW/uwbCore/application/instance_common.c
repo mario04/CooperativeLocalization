@@ -1001,7 +1001,6 @@ void instance_rxcallback(const dwt_callback_data_t *rxd)
 {
 	int instance = 0;
 	uint8 rxTimeStamp[5]  = {0, 0, 0, 0, 0};
-
     uint8 rxd_event = 0;
 	uint8 fcode_index  = 0;
 	uint8 srcAddr_index = 0;
@@ -1013,6 +1012,7 @@ void instance_rxcallback(const dwt_callback_data_t *rxd)
     //if we got a frame with a good CRC - RX OK
     if(rxd->event == DWT_SIG_RX_OKAY)
 	{
+    	//uartWriteLineNoOS("Hola2 :) \n");
  		dw_event.rxLength = rxd->datalength;
 
 		//need to process the frame control bytes to figure out what type of frame we have received

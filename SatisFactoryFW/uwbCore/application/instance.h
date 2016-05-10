@@ -32,6 +32,9 @@ extern "C" {
 #define CORRECT_RANGE_BIAS  (1)     // Compensate for small bias due to uneven accumulator growth at close up high power
 
 #define ANCTOANCTWR (0) //if set to 1 then anchor to anchor TWR will be done in the last slot
+#define FASTREPORT (1) // This produce a replay message from an anchor once the tag send the final message. This is done
+// in order to eliminate the latency of the tag when get the TOF. This increase the slot period for a Tag
+
 /******************************************************************************************************************
 *******************************************************************************************************************
 *******************************************************************************************************************/
@@ -120,6 +123,12 @@ extern "C" {
 #define TOFR                                3				// ToF (n-1) 4 bytes
 #define TOFRN								7				// range number 1 byte
 #define POLL_RNUM                           1               // Poll message range number
+
+#if FASTREPORT
+#define POLL_REPLAY_MSG						2
+#define REPLAY_MSG							1
+#endif
+
 
 //this it the delay used for configuring the receiver on delay (wait for response delay)
 //NOTE: this RX_RESPONSE_TURNAROUND is dependent on the microprocessor and code optimisations

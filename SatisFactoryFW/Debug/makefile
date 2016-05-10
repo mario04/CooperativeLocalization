@@ -71,7 +71,7 @@ all: SatisFactoryFW.elf secondary-outputs
 SatisFactoryFW.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross ARM C++ Linker'
-	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Og -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -ffreestanding -fno-move-loop-invariants -Wall -Wextra  -g3 -T "D:\STM32Toolchain\projects\SatisFactory_NucleoProto\SatisFactoryFW\ldscripts\mem.ld" -T "D:\STM32Toolchain\projects\SatisFactory_NucleoProto\SatisFactoryFW\ldscripts\libs.ld" -T "D:\STM32Toolchain\projects\SatisFactory_NucleoProto\SatisFactoryFW\ldscripts\sections.ld" -nostartfiles -Xlinker --gc-sections -L"D:\STM32Toolchain\projects\SatisFactory_NucleoProto\SatisFactoryFW\mpuCore\mpl" -Wl,-Map,"SatisFactoryFW.map" -o "SatisFactoryFW.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Og -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -ffreestanding -fno-move-loop-invariants -Wall -Wextra  -g3 -T "D:\RepositoryProjectsGit\SatisFactoryFW\ldscripts\mem.ld" -T "D:\RepositoryProjectsGit\SatisFactoryFW\ldscripts\libs.ld" -T "D:\RepositoryProjectsGit\SatisFactoryFW\ldscripts\sections.ld" -nostartfiles -Xlinker --gc-sections -L"D:\RepositoryProjectsGit\SatisFactoryFW\mpuCore\mpl" -Wl,-Map,"SatisFactoryFW.map" -o "SatisFactoryFW.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
