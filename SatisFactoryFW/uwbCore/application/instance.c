@@ -23,7 +23,7 @@
 
 // -------------------------------------------------------------------------------------------------------------------
 //      Data Definitions
-
+uint8 dataPROBE[30];
 // -------------------------------------------------------------------------------------------------------------------
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -410,9 +410,13 @@ int testapprun(instance_data_t *inst, int message)
                     inst->previousState = TA_TXFINAL_WAIT_SEND;
 
                 }
-            	if(inst->mode == TAG)
+            	if(inst->mode == TAG) // prepare to receive the report messages
             	{
-            		inst->instToSleep = TRUE ;
+            		inst->instToSleep = FALSE ; // The ranging do not finish here.
+            		inst->wait4ack = DWT_RESPONSE_EXPECTED; // Tag is waiting for report message.
+            		inst->rxRep[inst->rangeNum] = 0; //reset the number of received reports
+            		inst->reportTO = MAX_ANCHOR_LIST_SIZE; //expecting 4 report message
+            		dwt_setrxtimeout((uint16)inst->fwtoTime_sy * MAX_ANCHOR_LIST_SIZE);  //configure the RX FWTO
             	}
 				inst->done = INST_DONE_WAIT_FOR_NEXT_EVENT; //will use RX FWTO to time out (set above)
             }
@@ -459,8 +463,9 @@ int testapprun(instance_data_t *inst, int message)
                 {
                     if(inst->mode == TAG)
                     {
-                    	inst->testAppState = TA_TXE_WAIT ;
-                    	inst->nextState = TA_TXPOLL_WAIT_SEND ;
+                    	inst->testAppState = TA_RXE_WAIT ;
+
+                    	//inst->nextState = TA_TXPOLL_WAIT_SEND ;
                         break;
                     }
                     else
@@ -635,6 +640,8 @@ int testapprun(instance_data_t *inst, int message)
 								if(fcode == RTLS_DEMO_MSG_TAG_POLL) //got poll from Tag
 								{
 									inst->rangeNumA[srcAddr[0]&0x7] = messageData[POLL_RNUM]; //when anchor receives a poll, we need to remember the new range number
+									//sprintf((char*)&dataPROBE[0], "This is my message: %d", messageData[POLL_REPLAY_MSG]);
+									//uartWriteLineNoOS((char *) dataPROBE);
 								}
 								else //got poll from Anchor (initiator)
 								{
@@ -913,8 +920,13 @@ int testapprun(instance_data_t *inst, int message)
 								instancesetantennadelays(); //this will update the antenna delay if it has changed
 					            instancesettxpower(); // configure TX power if it has changed
 
-					            inst->testAppState = TA_RXE_WAIT ;              // wait for next frame
 
+
+#if FASTREPORT
+					            // function to send the report message. Tof as an argument.
+					            sendReport(inst->tofAnc[tof_idx]);
+#endif
+					            inst->testAppState = TA_RXE_WAIT ;              // wait for next frame
                             }
                             break; //RTLS_DEMO_MSG_TAG_FINAL
 
@@ -1120,6 +1132,13 @@ void instancesetreplydelay(int delayus) //delay in us
 
 
 
+}
+
+void sendReport(uint32 tof){
+	dwt_writetxdata(sizeof(tx_msg), tx_msg, 0);
+	dwt_writetxfctrl(sizeof(tx_msg), 0);
+	/* Start transmission. */
+	dwt_starttx(DWT_START_TX_IMMEDIATE);
 }
 
 // -------------------------------------------------------------------------------------------------------------------

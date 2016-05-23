@@ -125,8 +125,8 @@ extern "C" {
 #define POLL_RNUM                           1               // Poll message range number
 
 #if FASTREPORT
-#define POLL_REPLAY_MSG						2
-#define REPLAY_MSG							1
+#define POLL_REPLAY_MSG						25
+#define REPORT_MSG							1
 #endif
 
 
@@ -172,7 +172,7 @@ typedef enum inst_states
     TA_SLEEP_DONE,               //9
     TA_TXRESPONSE_SENT_POLLRX,    //10
     TA_TXRESPONSE_SENT_RESPRX,    //11
-    TA_TXRESPONSE_SENT_TORX		  //12
+    TA_TXRESPONSE_SENT_TORX,		  //12
 
 } INST_STATES;
 
@@ -356,6 +356,7 @@ typedef struct
 	uint8	wait4ack ;				// if this is set to DWT_RESPONSE_EXPECTED, then the receiver will turn on automatically after TX completion
 
     int8   responseTO ;
+    int8	reportTO;
 	uint8   instToSleep;			// if set the instance will go to sleep before sending the blink/poll message
 	uint8	stopTimer;				// stop/disable an active timer
     uint8	instanceTimerEn;		// enable/start a timer
@@ -415,6 +416,7 @@ typedef struct
 
 	uint8 rxRespsIdx; //index into the array below (current tag (4bits)/seq number(4bits))
 	int8 rxResps[256];
+	int8 rxRep[256];
 
 	int dwIDLE; //set to 1 when the RST goes high after wake up (it is set in process_dwRSTn_irq)
 
@@ -531,6 +533,8 @@ uint16 instancetxantdly(void);
 uint16 instancerxantdly(void);
 
 int instance_starttxtest(int framePeriod);
+void sendReport(uint32 tof);
+
 #ifdef __cplusplus
 }
 #endif
