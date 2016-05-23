@@ -23,7 +23,7 @@
 
 // -------------------------------------------------------------------------------------------------------------------
 //      Data Definitions
-uint8 dataPROBE[30];
+uint8 dataseq2[100];
 // -------------------------------------------------------------------------------------------------------------------
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -330,9 +330,6 @@ int testapprun(instance_data_t *inst, int message)
                 inst->msg_f.messageData[POLL_RNUM] = (inst->mode == TAG) ? inst->rangeNum : inst->rangeNumAnc; //copy new range number
             	inst->msg_f.messageData[FCODE] = (inst->mode == TAG) ? RTLS_DEMO_MSG_TAG_POLL : RTLS_DEMO_MSG_ANCH_POLL; //message function code (specifies if message is a poll, response or other...)
 
-#if	FASTREPORT
-            	inst->msg_f.messageData[POLL_REPLAY_MSG] = REPORT_MSG;
-#endif
                 inst->psduLength = (TAG_POLL_MSG_LEN + FRAME_CRTL_AND_ADDRESS_S + FRAME_CRC);
                 inst->msg_f.seqNum = inst->frameSN++; //copy sequence number and then increment
                 inst->msg_f.sourceAddr[0] = inst->eui64[0]; //copy the address
@@ -412,11 +409,18 @@ int testapprun(instance_data_t *inst, int message)
                 }
             	if(inst->mode == TAG) // prepare to receive the report messages
             	{
+
+#if REPORT_IMP
             		inst->instToSleep = FALSE ; // The ranging do not finish here.
             		inst->wait4ack = DWT_RESPONSE_EXPECTED; // Tag is waiting for report message.
             		inst->rxRep[inst->rangeNum] = 0; //reset the number of received reports
             		inst->reportTO = MAX_ANCHOR_LIST_SIZE; //expecting 4 report message
             		dwt_setrxtimeout((uint16)inst->fwtoTime_sy * MAX_ANCHOR_LIST_SIZE);  //configure the RX FWTO
+            		sprintf((char*)&dataseq2[0], "Preparing...\n ");
+            		uartWriteLineNoOS((char *) dataseq2); //send some data
+#else
+            		inst->instToSleep = TRUE;
+#endif
             	}
 				inst->done = INST_DONE_WAIT_FOR_NEXT_EVENT; //will use RX FWTO to time out (set above)
             }
@@ -464,9 +468,15 @@ int testapprun(instance_data_t *inst, int message)
                     if(inst->mode == TAG)
                     {
                     	inst->testAppState = TA_RXE_WAIT ;
+#if REPORT_IMP
 
-                    	//inst->nextState = TA_TXPOLL_WAIT_SEND ;
-                        break;
+                    	sprintf((char*)&dataseq2[0], "Preparing...\n ");
+                    	uartWriteLineNoOS((char *) dataseq2); //send some data
+#else
+                    	inst->nextState = TA_TXPOLL_WAIT_SEND ;
+                    	break;
+
+#endif
                     }
                     else
                     {
@@ -924,7 +934,7 @@ int testapprun(instance_data_t *inst, int message)
 
 #if FASTREPORT
 					            // function to send the report message. Tof as an argument.
-					            sendReport(inst->tofAnc[tof_idx]);
+					            //sendReport(inst->tofAnc[tof_idx]);
 #endif
 					            inst->testAppState = TA_RXE_WAIT ;              // wait for next frame
                             }
@@ -1134,12 +1144,12 @@ void instancesetreplydelay(int delayus) //delay in us
 
 }
 
-void sendReport(uint32 tof){
-	dwt_writetxdata(sizeof(tx_msg), tx_msg, 0);
-	dwt_writetxfctrl(sizeof(tx_msg), 0);
-	/* Start transmission. */
-	dwt_starttx(DWT_START_TX_IMMEDIATE);
-}
+//void sendReport(uint32 tof){
+//	dwt_writetxdata(sizeof(tx_msg), tx_msg, 0);
+//	dwt_writetxfctrl(sizeof(tx_msg), 0);
+//	/* Start transmission. */
+//	dwt_starttx(DWT_START_TX_IMMEDIATE);
+//}
 
 // -------------------------------------------------------------------------------------------------------------------
 //
